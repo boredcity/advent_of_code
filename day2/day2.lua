@@ -70,5 +70,5 @@ for line in io.lines('input.txt') do
     final_score2 = final_score2 + get_round_score_from_move_and_result(line:sub(1, 1), line:sub(3, 3))
 end
 
-print('Your score would be for task 1', final_score1)
-print('Your score would be for task 2', final_score2)
+print('Answer for task 1', final_score1)
+print('Answer for task 2', final_score2)
