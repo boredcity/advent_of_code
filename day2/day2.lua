@@ -72,3 +72,5 @@ end
 
 print('Answer for task 1', final_score1)
 print('Answer for task 2', final_score2)
+
+-- Verdict: Lua felt weird and with its 1-based indexing, "end"s all over the place, tables that have to be instanciated empty and inability to quickly split a string without using regex; not a fan :/

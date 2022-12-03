@@ -4,8 +4,10 @@ import 'dart:convert';
 void main() async {
   try {
     final file = File('input.txt');
-    final fileStream = file.openRead();
-    final linesStream = fileStream.transform(utf8.decoder).transform(LineSplitter());
+    final linesStream = file
+      .openRead()
+      .transform(utf8.decoder)
+      .transform(LineSplitter());
 
     var currentElfCalories = 0;
     var max0 = 0;
@@ -35,6 +37,8 @@ void main() async {
 
     print('maxCaloriesCarried by 1 elf $max0');
     print('maxCaloriesCarried by 3 elves ${max0 + max1 + max2}');
+    
+    // Verdict: Dart is awesome ❤️
   } catch (e) {
     print('Error: $e');
   }
