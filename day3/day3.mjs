@@ -8,7 +8,6 @@ let task1TotalScore = 0;
 let task2TotalScore = 0;
 const getScoreForTask2 = genGetScoreForTask2();
 getScoreForTask2.next();
-// getting fancy with red hot APIs 😅 make sure you use at least node 18.11
 for await (const line of file.readLines()) {
     task1TotalScore += getScoreForTask1(line);
     task2TotalScore += getScoreForTask2.next(line).value;
