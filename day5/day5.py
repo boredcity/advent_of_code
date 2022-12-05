@@ -46,6 +46,6 @@ def solve_task(crate_mover_model):
 print(f"First task's answer is {solve_task(9000)}")
 print(f"Second task's answer is {solve_task(9001)}")
 
-# Verdict: Python is cool if you really love indenting stuff
-# I don't love ".join" syntax, but that's mostly it.
+# Verdict: Python is cool (if you don't mind worrying about indentation ALL. THE. TIME.)
+# swiss-army style `[::]`s are wacky and I don't love `.join` syntax, but that's mostly it.
 # RegExps are cool, but I have to google a cheatsheet each time I use them :D
