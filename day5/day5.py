@@ -13,17 +13,17 @@ def solve_task(crate_mover_model):
 
             if line.startswith('move'):
                 args = re.search(r'move (\d+) from (\d+) to (\d+)', line)
-                count,\
-                    from_row_index,\
-                    to_row_index = (int(arg) for arg in args.groups())
+                count, _from_index, _to_index = (int(arg) for arg in args.groups())
+                from_index = _from_index - 1
+                to_index = _to_index - 1
 
-                from_row = state[from_row_index - 1]
+                from_row = state[from_index]
                 moved = from_row[-count:]
-                to_row = state[to_row_index - 1]
+                to_row = state[to_index]
                 step = 1 if crate_mover_model == 9001 else -1
 
-                state[from_row_index - 1] = from_row[:-count]
-                state[to_row_index - 1] = to_row + moved[::step]
+                state[from_index] = from_row[:-count]
+                state[to_index] = to_row + moved[::step]
                 continue
 
             if line.startswith(' 1'):
