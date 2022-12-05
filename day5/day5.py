@@ -37,8 +37,9 @@ def solve_task(mover_function):
                 continue
 
             # in between crates and moves
-
             if line.startswith(' 1'):
+                found = re.search(r'(?P<last_row_index>\d+)\s$', line)
+                line_length = int(found.group('last_row_index'))
                 continue
 
             if line == "\n":
@@ -48,10 +49,6 @@ def solve_task(mover_function):
 
             # crates
             line_crates = re.findall(r'\s{0,1}([\w]|\s{3})\s{0,1}', line)
-
-            if line_length == None:
-                line_length = len(line_crates)
-
             for (index, crate) in enumerate(line_crates):
                 if len(crate) == 1:
                     state[index].append(crate)
