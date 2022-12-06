@@ -9,31 +9,35 @@ local DRAW = 3
 local WIN = 6
 
 -- letter to round_result
-local round_result = {}
-round_result["X"] = LOSE
-round_result["Y"] = DRAW
-round_result["Z"] = WIN
+local round_result = {
+    ["X"] = LOSE,
+    ["Y"] = DRAW,
+    ["Z"] = WIN
+}
 
 -- letter to move:
-local move_value = {}
-move_value["A"] = ROCK
-move_value["B"] = PAPER
-move_value["C"] = SCISSORS
-move_value["X"] = ROCK
-move_value["Y"] = PAPER
-move_value["Z"] = SCISSORS
+local move_value = {
+    ["A"] = ROCK,
+    ["B"] = PAPER,
+    ["C"] = SCISSORS,
+    ["X"] = ROCK,
+    ["Y"] = PAPER,
+    ["Z"] = SCISSORS
+}
 
 -- move to winning_response
-local winning_response = {}
-winning_response[ROCK] = PAPER
-winning_response[PAPER] = SCISSORS
-winning_response[SCISSORS] = ROCK
+local winning_response = {
+    [ROCK] = PAPER,
+    [PAPER] = SCISSORS,
+    [SCISSORS] = ROCK
+}
 
 -- inverse of winning_response
-local losing_response = {}
-losing_response[ROCK] = SCISSORS
-losing_response[PAPER] = ROCK
-losing_response[SCISSORS] = PAPER
+local losing_response = {
+    [ROCK] = SCISSORS,
+    [PAPER] = ROCK,
+    [SCISSORS] = PAPER
+}
 
 function get_round_score_from_move_and_response(move, response)
     local move_score = move_value[move]
