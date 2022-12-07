@@ -26,10 +26,8 @@ for await (const line of file.readLines()) {
                 dirsStack.pop();
             } else if (argument === '/') {
                 dirsStack = ['/'];
-                dirs[getDirName()] = getInitialDirState();
             } else {
                 dirsStack.push(argument);
-                dirs[getDirName()] = getInitialDirState();
             }
         } else {
             throw new Error(`Unknown command "${commandName}"`);
