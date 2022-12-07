@@ -22,12 +22,16 @@ for await (const line of file.readLines()) {
         if (commandName === 'ls') {
             dirs[getDirName()] = getInitialDirState();
         } else if (commandName === 'cd') {
-            if (argument === '..') {
-                dirsStack.pop();
-            } else if (argument === '/') {
-                dirsStack = ['/'];
-            } else {
-                dirsStack.push(argument);
+            switch (argument) {
+                case '..':
+                    dirsStack.pop();
+                    break;
+                case '/':
+                    dirsStack = ['/'];
+                    break;
+                default:
+                    dirsStack.push(argument);
+                    break;
             }
         } else {
             throw new Error(`Unknown command "${commandName}"`);
