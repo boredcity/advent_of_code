@@ -53,7 +53,9 @@ const getFullSubdirectoryName = (pathToDir, subdirectoryName) =>
 // O(d) time, O(d) space where d is number of directories
 function dfsGetSize(pathToDir) {
     const dir = dirs[pathToDir];
-    // not a huge fan of doing it a) recursively and b) mutating objects as I do it,
+    // not a huge fan of:
+    // a) doing it recursively
+    // b) mutating objects as I do it
     // probably would've refactored the code if I had a bit more time
     dir.dirSize = dir.subdirectories.reduce(
         (acc, subdirectoryName) =>
@@ -95,3 +97,4 @@ console.log(
 
 // Verdict: ok, now we're getting serious :)
 // All the other tasks might end up being written in JS, TS or Dart :/
+// Total: O(n) time, O(d) space where d is number of directories
