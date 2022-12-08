@@ -1,6 +1,6 @@
 import { open } from 'node:fs/promises';
 
-// O(n^2) time, O(n) space
+// O(n) time, O(n) space
 async function main() {
     const file = await open('input.txt');
     const forest: string[] = (await file.readFile()).toString().split('\n');
