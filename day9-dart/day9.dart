@@ -1,20 +1,21 @@
 import 'dart:io';
 import 'dart:convert';
 
+const changesetByDirection = {
+  'U': [0, 1],
+  'D': [0, -1],
+  'L': [-1, 0],
+  'R': [1, 0]
+};
+
+final file = File('input.txt');
+
 void main() async {
   countVisitedByTail(int snakeLength) async {
-    final file = File('input.txt');
     final linesStream = file.openRead().transform(utf8.decoder).transform(LineSplitter());
 
     var currentSnake = List.generate(snakeLength, (index) => [0, 0]);
     final visitedByTail = Set<String>.from([currentSnake.first.join('/')]);
-
-    final changesetByDirection = {
-      'U': [0, 1],
-      'D': [0, -1],
-      'L': [-1, 0],
-      'R': [1, 0],
-    };
 
     await for (var line in linesStream) {
       final instructions = line.split(' ');
@@ -24,24 +25,20 @@ void main() async {
       for (var stepI = 0; stepI < steps; stepI++) {
         final headChangeset = changesetByDirection[direction];
         if (headChangeset == null) throw new Exception('Failed to parse command');
-
-        var prevLink = currentSnake[0];
+        var prevLink = null;
         for (final link in currentSnake) {
-          if (link == prevLink) {
-            // head
-            link[0] += headChangeset[0];
-            link[1] += headChangeset[1];
-          } else {
-            final distanceX = prevLink[0] - link[0];
-            final distanceY = prevLink[1] - link[1];
-            final stepX = distanceX != 0 ? distanceX ~/ distanceX.abs() : 0;
-            final stepY = distanceY != 0 ? distanceY ~/ distanceY.abs() : 0;
-
-            if (distanceX.abs() > 1 || distanceY.abs() > 1) {
-              link[0] += stepX;
-              link[1] += stepY;
+          final steps = [0, 0];
+          var shouldMove = false;
+          for (var i = 0; i < 2; i++) {
+            if (prevLink == null) {
+              link[i] += headChangeset[i];
+            } else {
+              final distance = prevLink[i] - link[i];
+              steps[i] = distance.sign;
+              if (distance.abs() > 1) shouldMove = true;
             }
           }
+          if (shouldMove) for (var i = 0; i < 2; i++) link[i] += steps[i];
           prevLink = link;
         }
         visitedByTail.add(currentSnake.last.join('/'));
