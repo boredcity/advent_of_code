@@ -9,9 +9,6 @@ SOURCE_ROW_I = 0
 SOURCE_COL_I = 500
 
 
-def get_sign(val): return int(val / abs(val))
-
-
 class TaskSolver:
 
     def __init__(self, figures: list[list[list[int]]], matrix_rows_len: int, matrix_cols_len: int):
@@ -75,6 +72,9 @@ class TaskSolver:
         return cur_unit_index
 
 
+def get_sign(val): return int(val / abs(val))
+
+
 def main() -> None:
     with open("input.txt", encoding="utf8") as fp:
         max_row_i = 0
@@ -94,7 +94,6 @@ def main() -> None:
         result2 = task.solve_for(lambda row_i, val: row_i == 0 and val != SOURCE)
         print(f'Task 1 solution is: unit {result1} and every one after it goes into the void')
         print(f'Task 2 solution is: unit {result2} blocks the source')
-
 
 if __name__ == "__main__":
     main()
