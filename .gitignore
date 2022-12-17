@@ -1,1 +1,5 @@
 .DS_Store
+
+# for Typescript to see @types/node
+node_modules/
+package*.json
