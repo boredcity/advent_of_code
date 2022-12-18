@@ -150,10 +150,7 @@ function findTowerHeight(
     while (true) {
         const currentRock = rocks[currentFigureIndex];
 
-        console.log(rocksPlaced);
-
         if (currentRock.isPlaced) {
-            console.log(rocksPlaced);
             if (currentRock.top + 1 > highestRow)
                 highestRow = currentRock.top + 1;
             isDebug && console.log('PLACED', { highestRow });
