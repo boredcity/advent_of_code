@@ -35,7 +35,7 @@ function setIntoRoster(monkeys, line, overrides) {
 const or = {
     humn: _ => res => res,
     root: (monkeys, m1, m2) => {
-        const [left, right] = [monkeys[m1](), monkeys[m2]()].sort(isCb);
+        const [left, right] = [monkeys[m1](), monkeys[m2]()];
         return isFn(left) ? left(right) : right(left);
     }
 };
