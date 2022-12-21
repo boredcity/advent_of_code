@@ -1,23 +1,23 @@
 import fs from 'node:fs';
 import readline from 'node:readline';
-const isCb = value => typeof value === 'function';
+const isFn = value => typeof value === 'function';
 function inferX(sign, left, right, result) {
     switch (sign) {
         case '+':
             if (!result) return left + right;
-            return isCb(left) ? left(result - right) : right(result - left);
+            return isFn(left) ? left(result - right) : right(result - left);
         case '-':
             if (!result) return left - right;
-            return isCb(left) ? left(result + right) : right(left - result);
+            return isFn(left) ? left(result + right) : right(left - result);
         case '/':
             if (!result) return left / right;
-            return isCb(left) ? left(result * right) : right(left / result);
+            return isFn(left) ? left(result * right) : right(left / result);
         case '*':
             if (!result) return left * right;
-            return isCb(left) ? left(result / right) : right(result / left);
+            return isFn(left) ? left(result / right) : right(result / left);
     }
 }
-function setIntoMonkeysMap(monkeys, line, overrides) {
+function setIntoRoster(monkeys, line, overrides) {
     const [name, work] = line.split(': ');
     const [m1, sign, m2] = work.split(' ');
     if (overrides?.[name]) {
@@ -27,24 +27,21 @@ function setIntoMonkeysMap(monkeys, line, overrides) {
     } else {
         monkeys[name] = () => {
             const values = [monkeys[m1](), monkeys[m2]()];
-            if (values.some(isCb)) return res => inferX(sign, ...values, res);
+            if (values.some(isFn)) return res => inferX(sign, ...values, res);
             return inferX(sign, ...values);
         };
     }
 }
-const task2Overrides = {
+const or = {
     humn: _ => res => res,
     root: (monkeys, m1, m2) => {
-        const leftValue = monkeys[m1]();
-        const rightValue = monkeys[m2]();
-        return isCb(leftValue) ? leftValue(rightValue) : rightValue(leftValue);
+        const [left, right] = [monkeys[m1](), monkeys[m2]()].sort(isCb);
+        return isFn(left) ? left(right) : right(left);
     }
 };
 const readlineInterfaceArg = { input: fs.createReadStream('input.txt') };
-const monkeyRosters = [{}, {}];
-for await (const line of readline.createInterface(readlineInterfaceArg)) {
-    setIntoMonkeysMap(monkeyRosters[0], line);
-    setIntoMonkeysMap(monkeyRosters[1], line, task2Overrides);
-}
-console.log(`Task 1 result is: ${monkeyRosters[0].root()}`);
-console.log(`Task 2 result is: ${monkeyRosters[1].root()}`);
+const roasters = [Object.create(null), Object.create(null)];
+for await (const line of readline.createInterface(readlineInterfaceArg))
+    setIntoRoster(roasters[0], line), setIntoRoster(roasters[1], line, or);
+console.log(`Task 1 result is: ${roasters[0].root()}`);
+console.log(`Task 2 result is: ${roasters[1].root()}`);
