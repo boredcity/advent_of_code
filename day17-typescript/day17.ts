@@ -1,6 +1,4 @@
-const events = require('node:events');
 const fs = require('node:fs/promises');
-const readline = require('node:readline');
 main().catch(err => console.error(err));
 type RockLines = [number, number][];
 
