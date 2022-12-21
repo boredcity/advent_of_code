@@ -1,45 +1,38 @@
 import fs from 'node:fs';
 import readline from 'node:readline';
 
-const HUMAN = 'humn';
-const ROOT_MONKEY = 'root';
-
 function inferMissingData(sign, first, second, result) {
     const isFirstFunc = typeof first === 'function';
     switch (sign) {
-        case '+': {
+        case '+':
             if (!result) return first + second;
             return isFirstFunc
                 ? first(result - second)
                 : second(result - first);
-        }
-        case '-': {
+        case '-':
             if (!result) return first - second;
             return isFirstFunc
                 ? first(result + second)
                 : second(first - result);
-        }
-        case '/': {
+        case '/':
             if (!result) return first / second;
             return isFirstFunc
                 ? first(result * second)
                 : second(first / result);
-        }
-        case '*': {
+        case '*':
             if (!result) return first * second;
             return isFirstFunc
                 ? first(result / second)
                 : second(result / first);
-        }
     }
 }
 
 function setIntoMonkeysMap(monkeys, line, overrides) {
     const [name, work] = line.split(': ');
     const [m1, sign, m2] = work.split(' ');
-    if (overrides?.[name])
-        return (monkeys[name] = () => overrides[name](monkeys, m1, m2));
-    monkeys[name] = !sign
+    monkeys[name] = overrides?.[name]
+        ? () => overrides[name](monkeys, m1, m2)
+        : !sign
         ? () => Number.parseInt(work)
         : () => {
               const results = [monkeys[m1](), monkeys[m2]()];
@@ -49,25 +42,21 @@ function setIntoMonkeysMap(monkeys, line, overrides) {
           };
 }
 
-const readlineInterfaceArg = { input: fs.createReadStream('input.txt') };
-const rl = readline.createInterface(readlineInterfaceArg);
-const monkeyGroups = [Object.create(null), Object.create(null)];
+const monkeys1 = Object.create(null);
+const monkeys2 = Object.create(null);
 const task2Overrides = {
-    [HUMAN]: () => x => x,
-    [ROOT_MONKEY]: (monkeys, m1, m2) => {
+    humn: _ => x => x,
+    root: (monkeys, m1, m2) => {
         const result1 = monkeys[m1]();
         const result2 = monkeys[m2]();
-        return typeof result1 === 'function'
-            ? result1(result2)
-            : result2(result1);
+        if (typeof result1 === 'function') return result1(result2);
+        if (typeof result2 === 'function') return result2(result1);
     }
 };
-
-for await (const line of rl) {
-    setIntoMonkeysMap(monkeyGroups[0], line);
-    setIntoMonkeysMap(monkeyGroups[1], line, task2Overrides);
+const readlineInterfaceArg = { input: fs.createReadStream('input.txt') };
+for await (const line of readline.createInterface(readlineInterfaceArg)) {
+    setIntoMonkeysMap(monkeys1, line);
+    setIntoMonkeysMap(monkeys2, line, task2Overrides);
 }
-
-monkeyGroups.forEach((group, i) =>
-    console.log(`Task ${i} result is: ${group.root()}`)
-);
+console.log(`Task 1 result is: ${monkeys1.root()}`);
+console.log(`Task 2 result is: ${monkeys2.root()}`);
