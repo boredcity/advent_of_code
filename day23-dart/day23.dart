@@ -2,7 +2,7 @@ import "dart:core";
 import 'dart:io';
 import 'dart:math';
 
-final desiredAdjustments = [
+const desiredAdjustments = [
   Position(-1, 0, alias: 'N'),
   Position(1, 0, alias: 'S'),
   Position(0, -1, alias: 'W'),
