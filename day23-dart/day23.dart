@@ -2,15 +2,20 @@ import "dart:core";
 import 'dart:io';
 import 'dart:math';
 
+final desiredAdjustments = [
+  Position(-1, 0, alias: 'N'),
+  Position(1, 0, alias: 'S'),
+  Position(0, -1, alias: 'W'),
+  Position(0, 1, alias: 'E'),
+];
+
 class Position {
   final int rowI;
   final int colI;
   final String? alias;
   const Position(int this.rowI, int this.colI, {String? this.alias});
 
-  Position movedBy(Position adjustment) {
-    return Position(rowI + adjustment.rowI, colI + adjustment.colI);
-  }
+  Position movedBy(Position adjustment) => Position(rowI + adjustment.rowI, colI + adjustment.colI);
 
   bool canMove(Position direction, Set<Position> others) {
     for (final crossAxis in [-1, 0, 1]) {
@@ -23,36 +28,17 @@ class Position {
     return true;
   }
 
-  bool hasNeighbours(Set<Position> others) {
-    for (final rI in [rowI - 1, rowI, rowI + 1]) {
-      for (final cI in [colI - 1, colI, colI + 1]) {
-        final pos = Position(rI, cI);
-        if (pos == this) continue;
-        if (others.contains(pos)) return true;
-      }
-    }
-    return false;
-  }
-
-  bool operator ==(Object other) {
-    return other is Position && other.colI == colI && other.rowI == rowI;
-  }
+  bool hasNeighbours(Set<Position> others) => !desiredAdjustments.every((dir) => canMove(dir, others));
 
   @override
-  String toString() {
-    return alias ?? "Pos($rowI/$colI)";
-  }
+  bool operator ==(Object other) => other is Position && other.colI == colI && other.rowI == rowI;
+
+  @override
+  String toString() => alias ?? "Pos($rowI/$colI)";
 
   @override
   int get hashCode => Object.hash(rowI.hashCode, colI.hashCode);
 }
-
-final desiredAdjustments = [
-  Position(-1, 0, alias: 'N'),
-  Position(1, 0, alias: 'S'),
-  Position(0, -1, alias: 'W'),
-  Position(0, 1, alias: 'E'),
-];
 
 List<Position> getEdgeCoords(Set<Position> elves) {
   return elves.fold<List<Position>>([
@@ -90,7 +76,6 @@ void main() async {
         if (elf.canMove(elfAdj, elves)) {
           desiredPositions.putIfAbsent(elf.movedBy(elfAdj), Set.new).add(elf);
           moved = true;
-          // print("${elf} -> ${elf.movedBy(elfAdj)} (${elfAdj})");
           break;
         }
         dirI++;
@@ -111,7 +96,7 @@ void main() async {
     }
 
     if (!someMoved) {
-      print("Task 2 result: Elves stopped moving during round ${i + 1}");
+      print("Task 2 result: elves stopped moving during round ${i + 1}");
       break;
     }
 
@@ -123,6 +108,8 @@ void main() async {
     i++;
   }
 }
+
+// For debugging:
 
 void _syncDrawField(Set<Position> elves, {bool toFile = false}) {
   final file = toFile ? File('output.txt') : null;
