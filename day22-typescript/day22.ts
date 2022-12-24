@@ -8,7 +8,7 @@ const nextDirections: Record<TurnInstruction, (dir: Direction) => Direction> = {
 };
 
 type PosInfo = { rowI: number; colI: number };
-type CurrentInfo = PosInfo & { dir: Direction; face: 0 };
+type CurrentInfo = PosInfo & { dir: Direction; face: number };
 
 const directionValues: Record<Direction, PosInfo> = {
     0: { rowI: 0, colI: 1 },
@@ -17,51 +17,105 @@ const directionValues: Record<Direction, PosInfo> = {
     3: { rowI: -1, colI: 0 }
 };
 
-const faceConnections = {
-    // TODO:
-    0: {
-        0: { face: 1, dir: 0 }, // R
-        1: { face: 2, dir: 1 }, // D
-        2: { face: 3, dir: 0, inverse: true }, // L
-        3: { face: 5, dir: 0 } // T
-    },
-    1: {
-        0: { face: 4, dir: 2, inverse: true } // R
-        // 1: { face: 2, dir: 1 }, // D
-        // 2: { face: 3, dir: 0, inverse: true }, // L
-        // 3: { face: 5, dir: 0 } // T
-    }
-    // 2: {
-    //     0: { face: 1, dir: 0 }, // R
-    //     1: { face: 2, dir: 1 }, // D
-    //     2: { face: 3, dir: 0, inverse: true }, // L
-    //     3: { face: 5, dir: 0 } // T
-    // },
-    // 3: {
-    //     0: { face: 1, dir: 0 }, // R
-    //     1: { face: 2, dir: 1 }, // D
-    //     2: { face: 3, dir: 0, inverse: true }, // L
-    //     3: { face: 5, dir: 0 } // T
-    // },
-    // 4: {
-    //     0: { face: 1, dir: 0 }, // R
-    //     1: { face: 2, dir: 1 }, // D
-    //     2: { face: 3, dir: 0, inverse: true }, // L
-    //     3: { face: 5, dir: 0 } // T
-    // },
-    // 5: {
-    //     0: { face: 1, dir: 0 }, // R
-    //     1: { face: 2, dir: 1 }, // D
-    //     2: { face: 3, dir: 0, inverse: true }, // L
-    //     3: { face: 5, dir: 0 } // T
-    // },
+const facePositions = [
+    [null, 0, 1],
+    [null, 2, null],
+    [3, 4, null],
+    [5, null, null]
+];
+
+const INPUT_FILE_NAME = 'input.txt';
+const SIDE_SIZE = 50;
+const LAST_I = SIDE_SIZE - 1;
+
+const _dirVisualisation = {
+    0: '>',
+    1: 'v',
+    2: '<',
+    3: '^'
 };
 
-const isEmpty = (str: string) => str === ' ';
+async function _dumpToFile(cmd: string, faceClones: string[][][]) {
+    if ('LR'.includes(cmd)) {
+        await fs.appendFile(
+            'output.txt',
+            ['\n'.repeat(8), cmd].join('\n'.repeat(2))
+        );
+        return;
+    }
+    const content = [
+        [null, 0, 1],
+        [null, 2, null],
+        [3, 4, null],
+        [5, null, null]
+    ]
+        .map(rowSections => {
+            const sectionsRow = rowSections.reduce((acc, section) => {
+                if (section === null) {
+                    acc.forEach((_, i) => (acc[i] += ' '.repeat(SIDE_SIZE)));
+                } else {
+                    faceClones[section].forEach(
+                        (rowEls, i) => (acc[i] += rowEls.join(''))
+                    );
+                }
+                acc.forEach((_, i) => (acc[i] += '    '));
+                return acc;
+            }, Array.from<string>({ length: SIDE_SIZE }).fill(''));
+            return sectionsRow.join('\n') + '\n'.repeat(4);
+        })
+        .join('\n');
+
+    await fs.appendFile(
+        'output.txt',
+        ['\n'.repeat(8), cmd, content].join('\n'.repeat(2))
+    );
+}
+
+const getNextTileOnAnotherFace: Record<
+    number,
+    Record<Direction, (rowI: number, colI: number) => CurrentInfo>
+> = {
+    0: {
+        0: (r, c) => ({ face: 1, dir: 0, rowI: r, colI: 0 }),
+        1: (r, c) => ({ face: 2, dir: 1, rowI: 0, colI: c }),
+        2: (r, c) => ({ face: 3, dir: 0, rowI: LAST_I - r, colI: 0 }),
+        3: (r, c) => ({ face: 5, dir: 0, rowI: c, colI: 0 })
+    },
+    1: {
+        0: (r, c) => ({ face: 4, dir: 2, rowI: LAST_I - r, colI: LAST_I }),
+        1: (r, c) => ({ face: 2, dir: 2, rowI: c, colI: LAST_I }),
+        2: (r, c) => ({ face: 0, dir: 2, rowI: r, colI: LAST_I }),
+        3: (r, c) => ({ face: 5, dir: 3, rowI: LAST_I, colI: c })
+    },
+    2: {
+        0: (r, c) => ({ face: 1, dir: 3, rowI: LAST_I, colI: r }),
+        1: (r, c) => ({ face: 4, dir: 1, rowI: 0, colI: c }),
+        2: (r, c) => ({ face: 3, dir: 1, rowI: 0, colI: r }),
+        3: (r, c) => ({ face: 0, dir: 3, rowI: LAST_I, colI: c })
+    },
+    3: {
+        0: (r, c) => ({ face: 4, dir: 0, rowI: r, colI: 0 }),
+        1: (r, c) => ({ face: 5, dir: 1, rowI: 0, colI: c }),
+        2: (r, c) => ({ face: 0, dir: 0, rowI: LAST_I - r, colI: 0 }),
+        3: (r, c) => ({ face: 2, dir: 0, rowI: c, colI: 0 })
+    },
+    4: {
+        0: (r, c) => ({ face: 1, dir: 2, rowI: LAST_I - r, colI: LAST_I }),
+        1: (r, c) => ({ face: 5, dir: 2, rowI: c, colI: LAST_I }),
+        2: (r, c) => ({ face: 3, dir: 2, rowI: r, colI: LAST_I }),
+        3: (r, c) => ({ face: 2, dir: 3, rowI: LAST_I, colI: c })
+    },
+    5: {
+        0: (r, c) => ({ face: 4, dir: 3, rowI: LAST_I, colI: r }),
+        1: (r, c) => ({ face: 1, dir: 1, rowI: 0, colI: c }),
+        2: (r, c) => ({ face: 0, dir: 1, rowI: 0, colI: r }),
+        3: (r, c) => ({ face: 3, dir: 3, rowI: LAST_I, colI: c })
+    }
+};
 
 async function solve1() {
     const [mapString, pathString]: string[] = (
-        await fs.readFile('test-input.txt')
+        await fs.readFile(INPUT_FILE_NAME)
     )
         .toString()
         .split('\n\n');
@@ -110,12 +164,13 @@ async function solve1() {
             }
         }
     }
-    console.log(1000 * (cur.rowI + 1) + 4 * (cur.colI + 1) + cur.dir);
+    return 1000 * (cur.rowI + 1) + 4 * (cur.colI + 1) + cur.dir;
 }
 
 async function solve2() {
+    await fs.writeFile('output.txt', '');
     const [mapString, pathString]: string[] = (
-        await fs.readFile('test-input.txt')
+        await fs.readFile(INPUT_FILE_NAME)
     )
         .toString()
         .split('\n\n');
@@ -123,60 +178,128 @@ async function solve2() {
     const mapRows: (string | undefined)[][] = mapString
         .split('\n')
         .map(row => row.split(''));
-    const colI = mapRows[0].findIndex(cell => cell === '.');
-    let cur: CurrentInfo = { rowI: 0, colI, dir: 0, face: 0 };
+
+    let cur: CurrentInfo = { rowI: 0, colI: 0, dir: 0, face: 0 };
 
     const faces: string[][][] = [];
-    for (let sectColI = 0; sectColI < mapRows[0].length; sectColI += 50) {
-        for (let sectRowI = 0; sectRowI < mapRows.length; sectRowI += 50) {
-            if (mapRows[sectRowI][sectColI]) {
-                const slicedRow = mapRows.slice(sectRowI, sectRowI + 50);
-                const slicedSection = slicedRow.slice(
-                    sectColI,
-                    sectColI + 50
-                ) as string[][];
+
+    for (let sectRowI = 0; sectRowI < mapRows.length; sectRowI += SIDE_SIZE) {
+        for (
+            let sectColI = 0;
+            sectColI < mapRows[sectRowI].length;
+            sectColI += SIDE_SIZE
+        ) {
+            if ((mapRows[sectRowI]?.[sectColI] ?? ' ') !== ' ') {
+                const slicedSection = mapRows
+                    .slice(sectRowI, sectRowI + SIDE_SIZE)
+                    .map(row =>
+                        row.slice(sectColI, sectColI + SIDE_SIZE)
+                    ) as string[][];
                 faces.push(slicedSection);
             }
         }
     }
 
+    const faceClones: string[][][] = JSON.parse(JSON.stringify(faces));
+
+    let prevCmd: string | null = null;
+    const debudRangeI = [0, 0];
     for (let i = 0; i < pathString.length; i++) {
+        const isDebug = i >= debudRangeI[0] && i < debudRangeI[1];
+        if (isDebug) {
+            await _dumpToFile(prevCmd!, faceClones);
+            console.log(
+                `i ${i} - cmd: ${prevCmd}\n`,
+                cur,
+                'LR'.includes(prevCmd!)
+                    ? ''
+                    : [
+                          '0123456789'.repeat(5).split(''),
+                          ...faceClones[cur.face]
+                      ].map((r, i) => r.join('') + `| ${i - 1}`)
+            );
+        }
         let cmd = pathString[i];
+        while (
+            !'LR'.includes(cmd) &&
+            pathString[i + 1] &&
+            !'LR'.includes(pathString[i + 1])
+        )
+            cmd += pathString[++i];
+
+        prevCmd = cmd;
 
         if (cmd === 'R' || cmd === 'L') {
             cur.dir = nextDirections[cmd](cur.dir);
+            faceClones[cur.face][cur.rowI][cur.colI] =
+                _dirVisualisation[cur.dir];
         } else {
-            while (pathString[i + 1] && !'LR'.includes(pathString[i + 1]))
-                cmd += pathString[++i];
-
-            const { colI: colIChange, rowI: rowIChange }: PosInfo =
-                directionValues[cur.dir];
-
             for (let i = 0; i < Number.parseInt(cmd); i++) {
+                const { colI: colIChange, rowI: rowIChange }: PosInfo =
+                    directionValues[cur.dir];
                 const desiredRowI = cur.rowI + rowIChange;
                 const desiredColI = cur.colI + colIChange;
                 const desiredCell = faces[cur.face][desiredRowI]?.[desiredColI];
+                // console.log(i, desiredCell);
                 if (desiredCell === '#') {
                     break;
                 } else if (desiredCell === '.') {
-                    cur.colI = desiredColI;
                     cur.rowI = desiredRowI;
+                    cur.colI = desiredColI;
+
+                    faceClones[cur.face][cur.rowI][cur.colI] = `${
+                        (i + 1) % 10
+                    }`;
                 } else {
-                    // wrapping
-                    let tmpRowI = cur.rowI;
-                    let tmpColI = cur.colI;
+                    const next = getNextTileOnAnotherFace[cur.face][cur.dir](
+                        cur.rowI,
+                        cur.colI
+                    );
 
-                    const nextFaceData = cur.face[cur.dir];
+                    isDebug &&
+                        console.log({
+                            cur,
+                            desiredCell: `"${desiredCell}" (${cur.face}/${desiredRowI}/${desiredColI})`,
+                            next,
+                            f: [
+                                '0123456789'.repeat(5).split(''),
+                                ...faceClones[cur.face]
+                            ].map((r, i) => r.join('') + `| ${i - 1}`)
+                        });
 
-                    // cool logic here
+                    if (faces[next.face][next.rowI]?.[next.colI] === '#') break;
+                    Object.assign(cur, next);
 
-                    cur.colI = tmpColI;
-                    cur.rowI = tmpRowI;
+                    faceClones[cur.face][cur.rowI][cur.colI] = `${
+                        (i + 1) % 10
+                    }`;
                 }
             }
         }
     }
-    console.log(1000 * (cur.rowI + 1) + 4 * (cur.colI + 1) + cur.dir);
+
+    let rowOffset = 0;
+    let colOffset = 0;
+    for (let rI = 0; rI < facePositions.length; rI++) {
+        for (let cI = 0; cI < facePositions[rI].length; cI++) {
+            if (facePositions[rI][cI] === cur.face) {
+                rowOffset = rI * SIDE_SIZE;
+                colOffset = cI * SIDE_SIZE;
+            }
+        }
+    }
+
+    return (
+        1000 * (cur.rowI + rowOffset + 1) +
+        4 * (cur.colI + colOffset + 1) +
+        cur.dir
+    );
 }
 
-solve2();
+(async function main() {
+    const [r1, r2] = await Promise.all([solve1(), solve2()]);
+    console.log(`Task 1 result: ${r1}`);
+    console.log(`Task 2 result: ${r2}`);
+})();
+
+// Broke solution to part 1 again :/
