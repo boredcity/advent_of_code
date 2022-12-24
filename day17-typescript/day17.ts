@@ -105,8 +105,20 @@ async function main() {
         rocks.push(new Rock(rockLines));
     }
 
-    console.log(findTowerHeight(rocks, WINDS, 2022));
-    // console.log(findTowerHeight(rocks, WINDS, 1_000_000_000_000));
+    console.log(
+        `Task 1 result: highest row index is ${findTowerHeight(
+            rocks,
+            WINDS,
+            2022
+        )}`
+    );
+    console.log(
+        `Task 2 result: highest row index is ${findTowerHeight(
+            rocks,
+            WINDS,
+            1_000_000_000_000
+        )}`
+    );
 }
 
 function vizualize(set: Set<string>, currentRock: Rock, highestRow: number) {
@@ -123,7 +135,7 @@ function vizualize(set: Set<string>, currentRock: Rock, highestRow: number) {
             }
             line += char;
         }
-        visualization.push(line);
+        visualization.push(line + `| ${x}`);
     }
     for (const l of visualization.reverse()) {
         console.log(l);
@@ -140,11 +152,19 @@ function findTowerHeight(
     let rocksPlaced = 0;
 
     rocks[0].reset(highestRow);
-    let set = new Set(
-        Array.from({ length: CHAMBER_WIDTH }).map((_, i) => `${i}/-1`)
-    );
+    const chamberWidthArr = Array.from({ length: CHAMBER_WIDTH });
+    let set = new Set(chamberWidthArr.map((_, i) => `${i}/-1`));
+    const seenPatterns = new Map<
+        string,
+        {
+            rocksPlaced: number;
+            highestRow: number;
+        }
+    >();
+    let rowRepeat = 0;
 
     let i = 0;
+    let cycleFound = false;
     while (true) {
         const currentRock = rocks[currentFigureIndex];
 
@@ -157,6 +177,36 @@ function findTowerHeight(
             newRock.reset(highestRow);
             isDebug && vizualize(set, newRock, highestRow);
             if (++rocksPlaced === untillFigureIsPlaced) break;
+
+            if (cycleFound) continue;
+
+            let patternKey = `${i}-${currentFigureIndex}`;
+            for (let r = highestRow - 1; r > highestRow - 6; r--) {
+                patternKey += chamberWidthArr
+                    .map((_, i) => (set.has(`${i}/${r}`) ? '#' : '.'))
+                    .join('');
+            }
+            const seen = seenPatterns.get(patternKey);
+            isDebug && console.log(`Checking pattern "${patternKey}"`, !!seen);
+            if (!seen) {
+                seenPatterns.set(patternKey, { rocksPlaced, highestRow });
+            } else {
+                const { rocksPlaced: prevPlaced, highestRow: prevHighest } =
+                    seen;
+                const rocksDiff = rocksPlaced - prevPlaced;
+                const cycleRepeats =
+                    Math.floor(
+                        (untillFigureIsPlaced - prevPlaced) / rocksDiff
+                    ) - 1;
+
+                isDebug &&
+                    console.log(
+                        `Found cycle found with pattern "${patternKey}" repeating ${cycleRepeats} for ${rocksDiff} figures`
+                    );
+                rowRepeat += cycleRepeats * (highestRow - prevHighest);
+                rocksPlaced += cycleRepeats * rocksDiff;
+                cycleFound = true;
+            }
             continue;
         }
         const windDirection = winds[i];
@@ -179,5 +229,5 @@ function findTowerHeight(
         isDebug && vizualize(set, currentRock, highestRow);
         i = (i + 1) % winds.length;
     }
-    return highestRow;
+    return highestRow + rowRepeat;
 }
